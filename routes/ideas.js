@@ -55,6 +55,7 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
 	IdeaModel.remove({_id: req.params.id})
 		.then(() => {
+			req.flash('success_msg', 'Video idea removed');
 			res.redirect('/ideas');
 		})
 })

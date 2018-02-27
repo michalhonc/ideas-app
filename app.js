@@ -4,6 +4,8 @@ const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const methodOveride = require('method-override');
+const flash = require('connect-flash');
+const session = require('express-session');
 const app = express();
 
 // Load Router
@@ -21,6 +23,28 @@ app.set('view engine', 'handlebars');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOveride('_method'));
+
+// Express session
+app.use(session({
+	secret: 'secret',
+	resave: true,
+	saveUninitialized: true
+}))
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(flash());
+
+// Global var
+app.use(function(req, res, next){
+	res.locals.success_msg = req.flash('success_msg');
+	res.locals.error_msg = req.flash('error_msg');
+	res.locals.error = req.flash('error');
+	res.locals.user = req.user || null;
+	next();
+})
 
 // Static folder
 app.use(express.static(path.join(__dirname, 'public')));
