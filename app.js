@@ -59,7 +59,6 @@ app.get('/', (req, res) => {
 app.get('/about', (req, res) => {
 	res.render('about')
 });
-
 // Use routes
 app.use('/ideas', ideas);
 app.use('/users', users); 

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const {ensureAuthenticated} = require('../helpers/auth');
 
 // Get Idea DB schema
 const IdeaModel = require('../models/Idea');
@@ -10,7 +11,7 @@ mongoose.connect('mongodb://localhost/ideas-dev')
 .then(() => console.log('mongodb connected'))
 .catch(err => console.log('mongodb err: ' + err));
 
-router.post('/', (req, res) => {
+router.post('/', ensureAuthenticated, (req, res) => {
 	let errors = [];
 	if (!req.body.title) {
 		errors.push({text: 'Please add a title'});
@@ -27,7 +28,8 @@ router.post('/', (req, res) => {
 	} else {
 		const newIdea = {
 			title: req.body.title,
-			details: req.body.details
+			details: req.body.details,
+			user: req.user.email
 		}
 		new IdeaModel(newIdea)
 			.save()
@@ -37,7 +39,7 @@ router.post('/', (req, res) => {
 	}
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', ensureAuthenticated, (req, res) => {
 	IdeaModel.findOne({
 		_id: req.params.id
 	})
@@ -52,7 +54,7 @@ router.put('/:id', (req, res) => {
 	})
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', ensureAuthenticated, (req, res) => {
 	IdeaModel.remove({_id: req.params.id})
 		.then(() => {
 			req.flash('success_msg', 'Video idea removed');
@@ -60,8 +62,8 @@ router.delete('/:id', (req, res) => {
 		})
 })
 
-router.get('/', (req, res) => {
-	IdeaModel.find({})
+router.get('/', ensureAuthenticated, (req, res) => {
+	IdeaModel.find({user: req.user.email})
 		.sort({date: 'desc'})
 		.then(ideas => {
 			res.render('ideas/index', {
@@ -70,7 +72,7 @@ router.get('/', (req, res) => {
 		})
 });
 
-router.get('/add', (req, res) => {
+router.get('/add', ensureAuthenticated, (req, res) => {
 	res.render('ideas/add');
 });
 
